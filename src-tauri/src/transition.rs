@@ -2,8 +2,11 @@ use reqwest;
 use serde_json::Value;
 use std::collections::HashMap;
 
-pub async fn run(api_key: &str, text: &str) -> Result<(), reqwest::Error> {
-    let text_to_translate = text;
+pub async fn run(
+    api_key: &str,
+    text_to_be_translated: &str,
+    client: &reqwest::Client,
+) -> Result<(), reqwest::Error> {
     let target_language = "ja";
 
     let url = format!(
@@ -12,10 +15,9 @@ pub async fn run(api_key: &str, text: &str) -> Result<(), reqwest::Error> {
     );
 
     let mut payload = HashMap::new();
-    payload.insert("q", text_to_translate);
+    payload.insert("q", text_to_be_translated);
     payload.insert("target", target_language);
 
-    let client = reqwest::Client::new();
     let res: Value = client
         .post(&url)
         .json(&payload)

@@ -1,17 +1,17 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use dotenv;
+use dotenv::dotenv;
 mod clipboard;
+mod config;
 mod transition;
 
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().ok();
-    let api_key =
-        std::env::var("GOOGLE_TRANSLATE_API_KEY").expect("GOOGLE_TRANSLATE_API_KEY must be set");
+    dotenv().ok();
+    let config = config::Config::new().expect("Failed to load config");
 
-    clipboard::run(&api_key).await;
+    clipboard::run(&config.api_key).await;
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![])
