@@ -28,10 +28,10 @@ pub async fn run(api_key: &str) {
                     // ここで翻訳とデスクトップ通知を行う
                     match transition::run(&api_key, &last_clipboard_content, &client).await {
                         Ok(_) => {
-                            println!("good job!")
+                            // 通知
                         }
                         Err(e) => {
-                            eprintln!("{}", e);
+                            eprintln!("Error: {}", e);
                         }
                     }
                 }
