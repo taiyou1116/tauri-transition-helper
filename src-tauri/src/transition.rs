@@ -1,12 +1,11 @@
 use reqwest;
 use serde_json::Value;
 use std::collections::HashMap;
-use std::sync::Arc;
 
 pub async fn run(
     api_key: &str,
     text_to_be_translated: &str,
-    client: &Arc<reqwest::Client>,
+    client: &reqwest::Client,
 ) -> Result<(), String> {
     let target_language = "ja";
 
