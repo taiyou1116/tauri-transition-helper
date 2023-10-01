@@ -1,10 +1,19 @@
+use clipboard::osx_clipboard::OSXClipboardContext;
 use clipboard::ClipboardContext;
 use clipboard::ClipboardProvider;
+use reqwest;
+use std::sync::Arc;
 use std::time::Duration;
 
 use crate::transition;
 
-pub async fn run(api_key: &str) {
+// 仮にこのようにラッパーを作成
+struct SafeOSXClipboardContext(OSXClipboardContext);
+
+// Sendトレイトを手動で実装
+unsafe impl Send for SafeOSXClipboardContext {}
+
+pub async fn run(api_key: &str, client: &Arc<reqwest::Client>) {
     let mut ctx: ClipboardContext = match ClipboardProvider::new() {
         Ok(context) => context,
         Err(e) => {
@@ -12,9 +21,11 @@ pub async fn run(api_key: &str) {
             return;
         }
     };
+
     let mut last_clipboard_content = String::new();
 
-    let client = reqwest::Client::new();
+    // let client = reqwest::Client::new();
+    // let client = Arc::new(client); // Arcでラップする
 
     loop {
         // クリップボードからテキストを取得
@@ -31,13 +42,13 @@ pub async fn run(api_key: &str) {
                             // 通知
                         }
                         Err(e) => {
-                            eprintln!("Error: {}", e);
+                            eprintln!("Error: {}", e.to_string());
                         }
                     }
                 }
             }
             Err(e) => {
-                eprintln!("Error: {}", e);
+                eprintln!("Error: {}", e.to_string());
             }
         }
 
