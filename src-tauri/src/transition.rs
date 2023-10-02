@@ -6,7 +6,7 @@ pub async fn run(
     api_key: &str,
     text_to_be_translated: &str,
     client: &reqwest::Client,
-) -> Result<(), reqwest::Error> {
+) -> Result<(), String> {
     let target_language = "ja";
 
     let url = format!(
@@ -22,9 +22,11 @@ pub async fn run(
         .post(&url)
         .json(&payload)
         .send()
-        .await?
+        .await
+        .map_err(|e| e.to_string())?
         .json()
-        .await?;
+        .await
+        .map_err(|e| e.to_string())?;
 
     match res["data"]["translations"][0]["translatedText"].as_str() {
         Some(translated_text) => println!("Translated text: {}", translated_text),
