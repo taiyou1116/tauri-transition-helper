@@ -1,9 +1,8 @@
+use crate::transition;
 use clipboard::ClipboardContext;
 use clipboard::ClipboardProvider;
 use reqwest;
 use std::time::Duration;
-
-use crate::transition;
 
 pub async fn run(api_key: &str) {
     let mut ctx: ClipboardContext = match ClipboardProvider::new() {
@@ -15,14 +14,14 @@ pub async fn run(api_key: &str) {
     };
 
     let mut last_clipboard_content = String::new();
-    let mut content = None;
+    let mut contents = None;
 
     let client = reqwest::Client::new();
 
     loop {
         // クリップボードからテキストを取得
-        content = match ctx.get_contents() {
-            Ok(contents) => Some(contents),
+        contents = match ctx.get_contents() {
+            Ok(ctx_contents) => Some(ctx_contents),
             Err(e) => {
                 eprintln!("Error: {}", e);
                 None // エラーが発生した場合はNoneを設定
@@ -30,8 +29,8 @@ pub async fn run(api_key: &str) {
         };
 
         // `content` が Some(value) であり、`last_clipboard_content` と異なる場合
-        if content.as_ref() != Some(&last_clipboard_content) {
-            if let Some(c) = content {
+        if contents.as_ref() != Some(&last_clipboard_content) {
+            if let Some(c) = contents {
                 println!("New clipboard content: {}", c);
                 last_clipboard_content = c;
 
