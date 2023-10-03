@@ -48,9 +48,9 @@ async fn run(window: Window) {
 
                 // ここで翻訳とデスクトップ通知を行う
                 match transition::run(&api_key, &last_clipboard_content, &client).await {
-                    Ok(_) => {
+                    Ok(translated_text) => {
                         // 通知
-                        if let Err(e) = window.emit("myCustomEvent", Some("event payload")) {
+                        if let Err(e) = window.emit("issueNotification", Some(translated_text)) {
                             eprintln!("Failed to emit event: {}", e);
                         }
                     }
