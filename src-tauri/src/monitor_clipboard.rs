@@ -1,10 +1,22 @@
-use crate::transition;
-use clipboard::ClipboardContext;
-use clipboard::ClipboardProvider;
+use crate::{config, transition};
+use clipboard::{ClipboardContext, ClipboardProvider};
+use dotenv::dotenv;
 use reqwest;
 use std::time::Duration;
+use tauri::Window;
 
-pub async fn run(api_key: &str) {
+#[tauri::command]
+pub async fn start_monitor_from_flont(window: Window) {
+    let join = tokio::spawn(async move {
+        run(window).await;
+    });
+}
+
+async fn run(window: Window) {
+    dotenv().ok();
+    let config_instance = config::Config::new().expect("Failed to load config");
+    let api_key = config_instance.api_key;
+
     let mut ctx: ClipboardContext = match ClipboardProvider::new() {
         Ok(context) => context,
         Err(e) => {
@@ -38,6 +50,9 @@ pub async fn run(api_key: &str) {
                 match transition::run(&api_key, &last_clipboard_content, &client).await {
                     Ok(_) => {
                         // 通知
+                        if let Err(e) = window.emit("myCustomEvent", Some("event payload")) {
+                            eprintln!("Failed to emit event: {}", e);
+                        }
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e.to_string());
