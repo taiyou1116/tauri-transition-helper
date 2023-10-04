@@ -1,20 +1,42 @@
 use crate::{config, transition};
 use clipboard::{ClipboardContext, ClipboardProvider};
-use dotenv::dotenv;
 use reqwest;
+use std::fs::File;
+use std::io::Write;
 use std::time::Duration;
 use tauri::Window;
 
+const BUNDLE_IDENTIFIER: &str = "com.taiyou.tauri-transition-helper";
+
+fn init_data_dir() -> File {
+    // データを保存するディレクトリを取得(なかったら現在のディレクトリに生成)
+    let data_dir = tauri::api::path::data_dir()
+        .unwrap_or(std::path::PathBuf::from("./"))
+        .join(BUNDLE_IDENTIFIER);
+    // エラー処理
+    if !data_dir.exists() {
+        std::fs::create_dir(&data_dir).expect("error");
+    }
+    // このディレクトリにログファイルを作成
+    let log_file_path = &data_dir.join("app.log");
+    let mut file = std::fs::File::create(log_file_path).expect("ログファイルの作成に失敗しました");
+    writeln!(file, "アプリケーションが起動しました").expect("ログの書き込みに失敗しました");
+    file
+}
+
 #[tauri::command]
 pub async fn start_monitor_from_flont(window: Window) {
+    let file: File = init_data_dir();
+
     let join = tokio::spawn(async move {
-        run(window).await;
+        run(window, file).await;
     });
 }
 
-async fn run(window: Window) {
-    dotenv().ok();
-    let config_instance = config::Config::new().expect("Failed to load config");
+async fn run(window: Window, mut file: File) {
+    writeln!(file, "1:").expect("1: e");
+    let config_instance = config::Config::new(&file).expect("Failed to load config");
+    writeln!(file, "2:").expect("2: e");
     let api_key = config_instance.api_key;
 
     let mut ctx: ClipboardContext = match ClipboardProvider::new() {
