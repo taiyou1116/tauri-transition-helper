@@ -6,7 +6,7 @@ pub async fn run(
     api_key: &str,
     text_to_be_translated: &str,
     client: &reqwest::Client,
-) -> Result<(), String> {
+) -> Result<String, String> {
     let target_language = "ja";
 
     let url = format!(
@@ -29,9 +29,7 @@ pub async fn run(
         .map_err(|e| e.to_string())?;
 
     match res["data"]["translations"][0]["translatedText"].as_str() {
-        Some(translated_text) => println!("Translated text: {}", translated_text),
-        None => println!("Translation failed"),
+        Some(translated_text) => Ok(translated_text.to_string()),
+        None => Err("Translation failed".to_string()),
     }
-
-    Ok(())
 }
