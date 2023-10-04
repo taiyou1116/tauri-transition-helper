@@ -3,18 +3,15 @@ import { isPermissionGranted, requestPermission, sendNotification } from "@tauri
 import { useState } from "react";
 
 function App() {
-  const [success, setSuccess] = useState("...");
-  const [call, setCall] = useState("...");
-  const [noti, setNoti] = useState("...");
+  const [apikey, setApikey] = useState("");
 
+  // Rustコード(start_monitor_from_flont)を実行
   async function callRustFunction() {
     try {
       // Rust側で定義した関数を実行
       await invoke('start_monitor_from_flont');  
-      setSuccess("成功");
     } catch (error) {
       console.error(`Failed to run Rust function: ${error}`);
-      setSuccess("失敗");
     }
   }
 
@@ -22,9 +19,9 @@ function App() {
   event.listen('issueNotification', (event) => {
     console.log("Custom event received:", event.payload);
     sendNotificationToDesktop(event.payload as string);
-    setCall("呼ばれた");
   });
 
+  // 翻訳された通知を出す
   const sendNotificationToDesktop = async (translatedText: string) => {
     let permissionGranted = await isPermissionGranted();
     if (!permissionGranted) {
@@ -33,12 +30,21 @@ function App() {
     }
     if (permissionGranted) {
       try {
-        await sendNotification({ title: '翻訳されました', body: translatedText });
-        setNoti("noti");
+        sendNotification({ title: '翻訳されました', body: translatedText });
       } catch (error) {
         console.log(`Something went wrong: ${error}`);
       }
     } 
+  }
+
+  // 入力したAPIをdata_dirで管理する
+  async function setApi(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    try {
+      
+    } catch {
+
+    }
   }
 
   return (
@@ -46,15 +52,10 @@ function App() {
       <button onClick={() => callRustFunction()}>
         開始
       </button>
-      <div>
-        { success }
-      </div>
-      <div>
-        { call }
-      </div>
-      <div>
-        { noti }
-      </div>
+      <form onSubmit={(e) => setApi(e)}>
+        <input type="text" placeholder="YOUR_API_KEY" onChange={(e) => setApikey(e.target.value)}/>
+        <button type="submit">セットAPI</button>
+      </form>
     </div>
   );
 }
