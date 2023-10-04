@@ -6,7 +6,7 @@ use std::io::Write;
 use std::time::Duration;
 use tauri::Window;
 
-const BUNDLE_IDENTIFIER: &str = "com.taiyou.tauri-transition-helper";
+pub const BUNDLE_IDENTIFIER: &str = "com.taiyou.tauri-transition-helper";
 
 fn init_data_dir() -> File {
     // データを保存するディレクトリを取得(なかったら現在のディレクトリに生成)

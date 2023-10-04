@@ -29,7 +29,10 @@ pub async fn run(
         .map_err(|e| e.to_string())?;
 
     match res["data"]["translations"][0]["translatedText"].as_str() {
-        Some(translated_text) => Ok(translated_text.to_string()),
+        Some(translated_text) => {
+            println!("{}", translated_text);
+            Ok(translated_text.to_string())
+        }
         None => Err("Translation failed".to_string()),
     }
 }

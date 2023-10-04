@@ -41,9 +41,9 @@ function App() {
   async function setApi(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     try {
-      
+      await invoke('save_apikey', {apikey});
     } catch {
-
+      console.log("Err: cannt save apikey");
     }
   }
 
