@@ -8,6 +8,7 @@ use tauri::Window;
 
 pub const BUNDLE_IDENTIFIER: &str = "com.taiyou.tauri-transition-helper";
 
+// アプリのデバッグ用
 fn init_data_dir() -> File {
     // データを保存するディレクトリを取得(なかったら現在のディレクトリに生成)
     let data_dir = tauri::api::path::data_dir()
@@ -28,15 +29,13 @@ fn init_data_dir() -> File {
 pub async fn start_monitor_from_flont(window: Window) {
     let file: File = init_data_dir();
 
-    let join = tokio::spawn(async move {
+    let _join = tokio::spawn(async move {
         run(window, file).await;
     });
 }
 
 async fn run(window: Window, mut file: File) {
-    writeln!(file, "1:").expect("1: e");
     let config_instance = config::Config::new(&file).expect("Failed to load config");
-    writeln!(file, "2:").expect("2: e");
     let api_key = config_instance.api_key;
 
     let mut ctx: ClipboardContext = match ClipboardProvider::new() {

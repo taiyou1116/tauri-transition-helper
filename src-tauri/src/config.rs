@@ -31,8 +31,8 @@ pub async fn save_apikey(apikey: String) {
     if !data_dir.exists() {
         std::fs::create_dir(&data_dir).expect("error");
     }
-    // このディレクトリにログファイルを作成
+    // このディレクトリにenvファイルを作成しAPI_KEYを書き込む
     let env_file_path = &data_dir.join(".env");
-    let mut file = std::fs::File::create(env_file_path).expect("ファイルの作成に失敗しました");
+    let mut file = std::fs::File::create(env_file_path).expect("envファイルの作成に失敗しました");
     writeln!(file, "GOOGLE_TRANSLATE_API_KEY={}", apikey).expect("書き込みに失敗しました");
 }
