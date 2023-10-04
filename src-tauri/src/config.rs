@@ -7,7 +7,10 @@ pub struct Config {
 }
 impl Config {
     pub fn new(mut file: &File) -> Result<Self, env::VarError> {
-        let api_key = "API_KEY".to_string();
+        if let Err(e) = dotenv() {
+            writeln!(file, "dotenverror: {}", e).expect("dotenverror: e");
+        }
+        let api_key = env::var("GOOGLE_TRANSLATE_API_KEY")?;
         Ok(Self { api_key })
     }
 }
