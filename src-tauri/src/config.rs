@@ -1,5 +1,7 @@
 use crate::monitor_clipboard::BUNDLE_IDENTIFIER;
+use crate::transition;
 use dotenv::from_path;
+use reqwest;
 use std::io::Write;
 use std::{env, fs::File};
 
@@ -23,7 +25,7 @@ impl Config {
 }
 
 #[tauri::command]
-pub async fn save_apikey(apikey: String) {
+pub async fn save_apikey(apikey: String) -> Result<(), String> {
     let data_dir = tauri::api::path::data_dir()
         .unwrap_or(std::path::PathBuf::from("./"))
         .join(BUNDLE_IDENTIFIER);
@@ -34,5 +36,18 @@ pub async fn save_apikey(apikey: String) {
     // このディレクトリにenvファイルを作成しAPI_KEYを書き込む
     let env_file_path = &data_dir.join(".env");
     let mut file = std::fs::File::create(env_file_path).expect("envファイルの作成に失敗しました");
-    writeln!(file, "GOOGLE_TRANSLATE_API_KEY={}", apikey).expect("書き込みに失敗しました");
+    writeln!(file, "GOOGLE_TRANSLATE_API_KEY={}", &apikey).expect("書き込みに失敗しました");
+
+    // APIキーが有用かどうか調べる
+    let client = reqwest::Client::new();
+    match transition::run(&apikey, "english", &client).await {
+        Ok(translated_text) => {
+            println!("Text: {}", translated_text);
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("Error: {}", e.to_string());
+            Err(e)
+        }
+    }
 }
