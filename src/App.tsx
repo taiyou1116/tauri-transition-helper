@@ -14,7 +14,7 @@ function App() {
         result = await invoke('verify_api_key_on_startup');
         setUsefulApiKey(true);
       } catch {
-        console.log("Err: " + result);
+        console.log(`Err: ${result}`);
       }
     };
 
@@ -76,7 +76,7 @@ function App() {
       { usefulApiKey ? (
         <div>
           有用なAPIキーが設定されています
-          <button onClick={() => setUsefulApiKey(false)}>再度APIキーを設定する</button>
+          <button onClick={() => {setUsefulApiKey(false);}}>再度APIキーを設定する</button>
         </div>
       ) : (
         <form onSubmit={(e) => handleSaveApiKey(e)}>
