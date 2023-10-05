@@ -6,6 +6,7 @@ import { toast, Toaster } from "react-hot-toast";
 function App() {
   const [apikey, setApikey] = useState("");
   const [usefulApiKey, setUsefulApiKey] = useState(false);
+  const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
     const initialize = async () => {
@@ -44,7 +45,12 @@ function App() {
       return;
     }
     await executeInvoke('start_monitor_from_flont');
+    setTranslating(true);
   };
+
+  const handleStop = async () => {
+
+  }
 
   // イベントを実行
   event.listen('issueNotification', (event) => {
@@ -70,9 +76,16 @@ function App() {
 
   return (
     <div>
-      <button onClick={() => handleStart()}>
-        開始
-      </button>
+      { translating ? (
+        <button onClick={() => handleStop()}>
+          中止
+        </button>
+      ) : (
+        <button onClick={() => handleStart()}>
+          開始
+        </button>
+      )}
+      
       { usefulApiKey ? (
         <div>
           有用なAPIキーが設定されています
