@@ -3,6 +3,7 @@ type ButtonProps = {
     text?: string,
     type?: 'submit' | 'button',
     variant?: Variant,
+    className?: string,
 }
 
 const variants = {
@@ -22,9 +23,9 @@ const variants = {
 type Variant = keyof typeof variants;
 
 export default function Button(props: ButtonProps) {
-    const { onClick, text, type, variant } = props;
+    const { onClick, text, type, variant, className } = props;
 
-    const classes = ` ${variant ? variants[variant] : variants.default} `;
+    const classes = ` ${variant ? variants[variant] : variants.default} ${className}`;
 
     return (
         <button

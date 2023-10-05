@@ -78,7 +78,7 @@ function App() {
 
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-gray-200">
-      { translating ? (
+      { translating ?(
         <Button 
           text="翻訳停止"
           variant="default"
@@ -89,17 +89,18 @@ function App() {
           text="翻訳開始"
           variant="primary"
           onClick={() => handleStart()}
+          className="w-40"
         />
       )}
       { usefulApiKey ? (
-        <div className="flex items-center space-x-2 mt-4">
-          <span className="text-lg text-green-600">有用なAPIキーが設定されています</span>
-          <Button 
-            text="再度APIキーを設定する"
-            variant="default"
-            onClick={() => {setUsefulApiKey(false);}}
-          />
-        </div>
+          <div className="flex items-center space-x-2 mt-20 border border-gray-300 py-2 px-4 rounded-md shadow-sm">
+            <span className="text-lg text-green-600">有用なAPIキーが設定されています</span>
+            <Button 
+              text="再度APIキーを設定する"
+              variant="default"
+              onClick={() => {setUsefulApiKey(false);}}
+            />
+          </div>
       ) : (
         <form onSubmit={(e) => handleSaveApiKey(e)} className="flex items-center space-x-2 mt-4">
           <input 
