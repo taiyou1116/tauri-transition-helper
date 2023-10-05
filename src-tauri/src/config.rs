@@ -24,6 +24,40 @@ impl Config {
     }
 }
 
+// 開始時に有用か調べる関数
+#[tauri::command]
+pub async fn verify_api_key_on_startup() -> Result<(), String> {
+    let data_dir = tauri::api::path::data_dir()
+        .unwrap_or(std::path::PathBuf::from("./"))
+        .join(BUNDLE_IDENTIFIER);
+    // ない場合は作成
+    if !data_dir.exists() {
+        std::fs::create_dir(&data_dir).expect("error");
+    }
+
+    let env_file_path = data_dir.join(".env");
+
+    if let Err(e) = from_path(env_file_path) {
+        return Err(e.to_string());
+    }
+    let api_key = env::var("GOOGLE_TRANSLATE_API_KEY")
+        .expect("msg")
+        .to_string();
+
+    // APIキーが有用かどうか調べる
+    let client = reqwest::Client::new();
+    match transition::run(&api_key, "english", &client).await {
+        Ok(translated_text) => {
+            println!("Text: {}", translated_text);
+            Ok(())
+        }
+        Err(e) => {
+            eprintln!("Error: {}", e.to_string());
+            Err(e)
+        }
+    }
+}
+
 #[tauri::command]
 pub async fn save_apikey(apikey: String) -> Result<(), String> {
     let data_dir = tauri::api::path::data_dir()

@@ -9,7 +9,8 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             monitor_clipboard::start_monitor_from_flont,
-            config::save_apikey
+            config::save_apikey,
+            config::verify_api_key_on_startup
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
