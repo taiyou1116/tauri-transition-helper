@@ -3,6 +3,8 @@ import { isPermissionGranted, requestPermission, sendNotification } from "@tauri
 import { useEffect, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 
+import Button from "./components/Button";
+
 function App() {
   const [apikey, setApikey] = useState("");
   const [usefulApiKey, setUsefulApiKey] = useState(false);
@@ -75,26 +77,41 @@ function App() {
   }
 
   return (
-    <div>
+    <div className="flex flex-col justify-center items-center min-h-screen bg-gray-200">
       { translating ? (
-        <button onClick={() => handleStop()}>
-          中止
-        </button>
+        <Button 
+          text="翻訳停止"
+          variant="default"
+          onClick={() => handleStop()}
+        />
       ) : (
-        <button onClick={() => handleStart()}>
-          開始
-        </button>
+        <Button 
+          text="翻訳開始"
+          variant="primary"
+          onClick={() => handleStart()}
+        />
       )}
-      
       { usefulApiKey ? (
-        <div>
-          有用なAPIキーが設定されています
-          <button onClick={() => {setUsefulApiKey(false);}}>再度APIキーを設定する</button>
+        <div className="flex items-center space-x-2 mt-4">
+          <span className="text-lg text-green-600">有用なAPIキーが設定されています</span>
+          <Button 
+            text="再度APIキーを設定する"
+            variant="default"
+            onClick={() => {setUsefulApiKey(false);}}
+          />
         </div>
       ) : (
-        <form onSubmit={(e) => handleSaveApiKey(e)}>
-          <input type="text" placeholder="YOUR_API_KEY" onChange={(e) => setApikey(e.target.value)}/>
-          <button type="submit">セットAPI</button>
+        <form onSubmit={(e) => handleSaveApiKey(e)} className="flex items-center space-x-2 mt-4">
+          <input 
+            type="text" 
+            placeholder="YOUR_API_KEY" 
+            onChange={(e) => setApikey(e.target.value)} 
+            className="px-4 py-2 border rounded-md"/>
+          <Button 
+            text="APIキーをセット"
+            variant="success"
+            type="submit"
+          />
         </form>
       )}
 
