@@ -1,7 +1,8 @@
-import { invoke, event } from "@tauri-apps/api";
+import { invoke } from "@tauri-apps/api";
 import { isPermissionGranted, requestPermission, sendNotification } from "@tauri-apps/api/notification";
 import { useEffect, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
+import { listen } from "@tauri-apps/api/event";
 
 import Button from "./components/Button";
 
@@ -20,8 +21,34 @@ function App() {
         console.log(`Err: ${result}`);
       }
     };
-
     initialize();
+
+    let already_unmounted = false; // マウントされた瞬間にアンマウントされる場合があるため用意
+    let unlisten: () => void = () => {};
+    
+    (async () => {
+      const unlsn = await listen<string>(
+        "issueNotification",
+        (event) => {
+          console.log("Custom event received:", event.payload);
+          sendNotificationToDesktop(event.payload as string);
+        });
+    
+      if (already_unmounted) {
+        unlsn();
+      } else {
+        unlisten = unlsn;
+      }
+    })();
+    
+    // クリーンアップ関数：コンポーネントのアンマウント時に実行
+    return () => {
+  
+      already_unmounted = true;
+    
+      // イベントリッスン終了
+      unlisten();
+    };
   }, []);
 
   const executeInvoke = async (invokeName: string, payload?: any) => {
@@ -53,12 +80,6 @@ function App() {
   const handleStop = async () => {
 
   }
-
-  // イベントを実行
-  event.listen('issueNotification', (event) => {
-    console.log("Custom event received:", event.payload);
-    sendNotificationToDesktop(event.payload as string);
-  });
 
   // 翻訳された通知を出す
   const sendNotificationToDesktop = async (translatedText: string) => {
