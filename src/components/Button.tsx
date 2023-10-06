@@ -33,7 +33,7 @@ export default function Button(props: ButtonProps) {
           className={classes ?? ''}
           onClick={onClick ? () => onClick() : undefined}
         >
-          {text && <span>{text}</span>}
+          <span>{text}</span>
         </button>
     )
 }

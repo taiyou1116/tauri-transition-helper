@@ -78,6 +78,9 @@ function App() {
 
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-gray-200">
+      <div>
+        {/* 元の言語 -> 翻訳言語 */}
+      </div>
       { translating ?(
         <Button 
           text="翻訳停止"
@@ -85,6 +88,7 @@ function App() {
           onClick={() => handleStop()}
         />
       ) : (
+        usefulApiKey &&
         <Button 
           text="翻訳開始"
           variant="primary"
