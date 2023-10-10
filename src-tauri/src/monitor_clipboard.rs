@@ -1,12 +1,18 @@
 use crate::{config, transition};
 use clipboard::{ClipboardContext, ClipboardProvider};
+use lazy_static::lazy_static;
 use reqwest;
 use std::fs::File;
 use std::io::Write;
+use std::sync::Mutex;
 use std::time::Duration;
 use tauri::Window;
 
 pub const BUNDLE_IDENTIFIER: &str = "com.taiyou.tauri-transition-helper";
+
+lazy_static! {
+    static ref FLAG: Mutex<bool> = Mutex::new(true);
+}
 
 // アプリのデバッグ用
 fn init_data_dir() -> File {
