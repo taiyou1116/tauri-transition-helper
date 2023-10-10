@@ -10,8 +10,9 @@ use tauri::Window;
 
 pub const BUNDLE_IDENTIFIER: &str = "com.taiyou.tauri-transition-helper";
 
+// loop処理をしているかは `LOOP_FLAG` で管理
 lazy_static! {
-    static ref FLAG: Mutex<bool> = Mutex::new(true);
+    static ref LOOP_FLAG: Mutex<bool> = Mutex::new(false);
 }
 
 // アプリのデバッグ用
@@ -20,7 +21,7 @@ fn init_data_dir() -> File {
     let data_dir = tauri::api::path::data_dir()
         .unwrap_or(std::path::PathBuf::from("./"))
         .join(BUNDLE_IDENTIFIER);
-    // エラー処理
+    // data_dirがなければ作成
     if !data_dir.exists() {
         std::fs::create_dir(&data_dir).expect("error");
     }
@@ -38,6 +39,13 @@ pub async fn start_monitor_from_flont(window: Window) {
     let _join = tokio::spawn(async move {
         run(window, file).await;
     });
+}
+
+#[tauri::command]
+pub async fn stop_transition() {
+    // lockで他のスレッドからは読み書きできないようにする
+    let mut flag = LOOP_FLAG.lock().unwrap();
+    *flag = true;
 }
 
 async fn run(window: Window, mut file: File) {
@@ -58,6 +66,13 @@ async fn run(window: Window, mut file: File) {
     let client = reqwest::Client::new();
 
     loop {
+        {
+            let flag = LOOP_FLAG.lock().unwrap();
+            if *flag == true {
+                break;
+            }
+        }
+
         // クリップボードからテキストを取得
         contents = match ctx.get_contents() {
             Ok(ctx_contents) => Some(ctx_contents),
@@ -91,4 +106,8 @@ async fn run(window: Window, mut file: File) {
         // 1秒待機（ポーリング間隔）
         tokio::time::sleep(Duration::from_secs(1)).await
     }
+
+    // ループが終了したらFLAGをfalseにリセット
+    let mut flag = LOOP_FLAG.lock().unwrap();
+    *flag = false;
 }

@@ -78,7 +78,8 @@ function App() {
   };
 
   const handleStop = async () => {
-
+    await executeInvoke('stop_transition');
+    setTranslating(false);
   }
 
   // 翻訳された通知を出す

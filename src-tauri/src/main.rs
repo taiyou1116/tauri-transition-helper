@@ -9,6 +9,7 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             monitor_clipboard::start_monitor_from_flont,
+            monitor_clipboard::stop_transition,
             config::save_apikey,
             config::verify_api_key_on_startup
         ])
