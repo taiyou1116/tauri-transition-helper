@@ -14,10 +14,9 @@ function App() {
   const [translating, setTranslating] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("ja");
 
+  // 開始時にAPI, lnを確認。通知イベントを設定
   useEffect(() => {
-    // 設定しているAPIキーが使えるものか認証
     const initialize = async () => {
-
       const result = await executeInvoke('verify_api_key_on_startup');
       if (result) setValidApiKey(true);
       
@@ -31,7 +30,7 @@ function App() {
     initialize();
 
     // 通知が複数回呼ばれるのを防ぐ
-    let already_unmounted = false; // マウントされた瞬間にアンマウントされる場合があるため用意
+    let already_unmounted = false;
     let unlisten: () => void = () => {};
     
     (async () => {
@@ -49,9 +48,8 @@ function App() {
       }
     })();
     
-    // クリーンアップ関数：コンポーネントのアンマウント時に実行
+    // クリーンアップ関数
     return () => {
-  
       already_unmounted = true;
     
       // イベントリッスン終了
