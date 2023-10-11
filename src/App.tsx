@@ -3,6 +3,7 @@ import { isPermissionGranted, requestPermission, sendNotification } from "@tauri
 import { useEffect, useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { listen } from "@tauri-apps/api/event";
+import { ChangeEvent } from "react";
 
 import Button from "./components/Button";
 
@@ -12,6 +13,7 @@ function App() {
   const [translating, setTranslating] = useState(false);
 
   useEffect(() => {
+    // 設定しているAPIキーが使えるものか認証
     const initialize = async () => {
       let result;
       try {
@@ -23,6 +25,7 @@ function App() {
     };
     initialize();
 
+    // 通知が複数回呼ばれるのを防ぐ
     let already_unmounted = false; // マウントされた瞬間にアンマウントされる場合があるため用意
     let unlisten: () => void = () => {};
     
@@ -60,7 +63,8 @@ function App() {
       return false;
     }
   };
-
+  
+  // APIキーを設定
   const handleSaveApiKey = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const result = await executeInvoke('save_apikey', { apikey });
@@ -82,6 +86,15 @@ function App() {
     setTranslating(false);
   }
 
+  const [selectedValue, setSelectedValue] = useState("ja");
+
+  const handleChange = async (e: ChangeEvent<HTMLSelectElement>) => {
+    // Rustの言語に
+    setSelectedValue(e.target.value);
+    const setLanguage = e.target.value;
+    await executeInvoke('set_language', {setLanguage});
+  };
+
   // 翻訳された通知を出す
   const sendNotificationToDesktop = async (translatedText: string) => {
     let permissionGranted = await isPermissionGranted();
@@ -101,7 +114,14 @@ function App() {
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-gray-200">
       <div>
-        {/* 元の言語 -> 翻訳言語 */}
+        <label htmlFor="fruit">Fruit: </label>
+        <select id="fruit" value={selectedValue} onChange={(e) => handleChange(e)}>
+          <option value="ja">日本語</option>
+          <option value="en">English</option>
+          <option value="zh-CN">中国語（簡体）</option>
+          <option value="zh-TW">中国語（繁体）</option>
+          <option value="ko">한국어</option>
+        </select>
       </div>
       { translating ?(
         <Button 

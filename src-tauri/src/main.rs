@@ -11,7 +11,8 @@ fn main() {
             monitor_clipboard::start_monitor_from_flont,
             monitor_clipboard::stop_transition,
             config::save_apikey,
-            config::verify_api_key_on_startup
+            config::verify_api_key_on_startup,
+            config::set_language
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
