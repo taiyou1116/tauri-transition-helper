@@ -51,19 +51,20 @@ async fn run_transition_test(apikey: Option<String>) -> Result<(), String> {
 // 開始時にAPIキーが有用か調べる
 #[tauri::command]
 pub async fn verify_api_key_on_startup() -> Result<(), String> {
-    let data_dir = get_data_dir();
     // data_dirがなければ作成
+    let data_dir = get_data_dir();
     if !data_dir.exists() {
         std::fs::create_dir(&data_dir).expect("error");
     }
+    // env_file_pathがなければ作成
     let env_file_path = data_dir.join(".env");
-
     if !env_file_path.exists() {
         let file = std::fs::File::create(&env_file_path).map_err(|e| e.to_string())?;
-        // 初期値のLANGUAGEを入れる
+        // 初期値のLANGUAGEのVALUE(ja)を入れる
         writeln!(&file, "LANGUAGE=ja\n").map_err(|e| e.to_string())?;
     }
     dotenv::from_path(&env_file_path).ok();
+
     run_transition_test(None).await
 }
 
@@ -79,17 +80,19 @@ fn change_environment_value(key: String, value: &str) -> Result<(), String> {
     let env_file_path = get_data_dir().join(".env");
     // envファイルの値を即座に反映
     env::set_var(&key, &value);
+
+    // 1. envファイルから環境変数をString型で受け取る
     let content = fs::read_to_string(&env_file_path).map_err(|e| e.to_string())?;
     let mut env_map: HashMap<String, String> = HashMap::new();
 
-    // 2. キーと値のペアを解析
+    // 2. キーと値のペアをenv_mapにinsert
     for line in content.lines() {
         let parts: Vec<&str> = line.split('=').collect();
         if parts.len() == 2 {
             env_map.insert(parts[0].to_string(), parts[1].to_string());
         }
     }
-    // 3. キーの値を更新
+    // 3. 値を更新
     env_map.insert(key, value.to_string());
 
     // 4. HashMapを.env形式に (KEY=VALUE)
@@ -117,7 +120,7 @@ pub async fn save_apikey(apikey: String) -> Result<(), String> {
     change_environment_value("GOOGLE_TRANSLATE_API_KEY".to_string(), &apikey)?;
     run_transition_test(Some(apikey)).await
 }
-
+// フロントからlanguageを設定する
 #[tauri::command]
 pub async fn save_language(set_language: String) -> Result<(), String> {
     change_environment_value("LANGUAGE".to_string(), &set_language)?;
