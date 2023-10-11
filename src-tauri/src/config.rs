@@ -68,6 +68,13 @@ pub async fn verify_api_key_on_startup() -> Result<(), String> {
     run_transition_test(None).await
 }
 
+// アプリ開始時のlanguageを取得しフロントへ送る
+#[tauri::command]
+pub async fn confirm_language_on_startup() -> Result<String, String> {
+    let language = env::var("LANGUAGE").map_err(|e| e.to_string())?;
+    Ok(language)
+}
+
 // envファイルのvalueを変更(KEYがなかったら作成)
 fn change_environment_value(key: String, value: &str) -> Result<(), String> {
     let env_file_path = get_data_dir().join(".env");

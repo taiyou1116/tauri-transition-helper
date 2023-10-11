@@ -12,7 +12,8 @@ fn main() {
             monitor_clipboard::stop_transition,
             config::save_apikey,
             config::verify_api_key_on_startup,
-            config::save_language
+            config::save_language,
+            config::confirm_language_on_startup
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

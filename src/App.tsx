@@ -11,6 +11,7 @@ function App() {
   const [apikey, setApikey] = useState("");
   const [usefulApiKey, setUsefulApiKey] = useState(false);
   const [translating, setTranslating] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState("ja");
 
   useEffect(() => {
     // 設定しているAPIキーが使えるものか認証
@@ -19,6 +20,12 @@ function App() {
       try {
         result = await invoke('verify_api_key_on_startup');
         setUsefulApiKey(true);
+      } catch {
+        console.log(`Err: ${result}`);
+      }
+      try {
+        result = await invoke('confirm_language_on_startup');
+        setSelectedLanguage(result as string);
       } catch {
         console.log(`Err: ${result}`);
       }
@@ -86,11 +93,9 @@ function App() {
     setTranslating(false);
   }
 
-  const [selectedValue, setSelectedValue] = useState("ja");
-
   const handleChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     // Rustの言語に
-    setSelectedValue(e.target.value);
+    setSelectedLanguage(e.target.value);
     const setLanguage = e.target.value;
     await executeInvoke('save_language', {setLanguage});
   };
@@ -113,16 +118,6 @@ function App() {
 
   return (
     <div className="flex flex-col justify-center items-center min-h-screen bg-gray-200">
-      <div>
-        <label htmlFor="fruit">Fruit: </label>
-        <select id="fruit" value={selectedValue} onChange={(e) => handleChange(e)}>
-          <option value="ja">日本語</option>
-          <option value="en">English</option>
-          <option value="zh-CN">中国語（簡体）</option>
-          <option value="zh-TW">中国語（繁体）</option>
-          <option value="ko">한국어</option>
-        </select>
-      </div>
       { translating ?(
         <Button 
           text="翻訳停止"
@@ -131,12 +126,25 @@ function App() {
         />
       ) : (
         usefulApiKey &&
-        <Button 
-          text="翻訳開始"
-          variant="primary"
-          onClick={() => handleStart()}
-          className="w-40"
-        />
+        <div className="flex gap-3">
+          <select 
+            value={selectedLanguage} 
+            onChange={(e) => handleChange(e)}
+            className="border border-gray-500"
+          >
+            <option value="ja">日本語</option>
+            <option value="en">English</option>
+            <option value="zh-CN">中国語（簡体）</option>
+            <option value="zh-TW">中国語（繁体）</option>
+            <option value="ko">한국어</option>
+          </select>
+          <Button 
+            text="翻訳開始"
+            variant="primary"
+            onClick={() => handleStart()}
+            className="w-40"
+          />
+        </div>
       )}
       { usefulApiKey ? (
           <div className="flex items-center space-x-2 mt-20 border border-gray-300 py-2 px-4 rounded-md shadow-sm">
