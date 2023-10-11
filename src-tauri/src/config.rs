@@ -29,9 +29,10 @@ impl Config {
 async fn run_transition_test(apikey: Option<String>) -> Result<(), String> {
     let api_key = match apikey {
         Some(key) => key,
-        None => env::var("GOOGLE_TRANSLATE_API_KEY")
-            .expect("google api keyが取得できませんでした")
-            .to_string(),
+        None => match env::var("GOOGLE_TRANSLATE_API_KEY") {
+            Ok(val) => val,
+            Err(_) => return Err("google api keyが取得できませんでした".to_string()),
+        },
     };
 
     let client = reqwest::Client::new();
@@ -50,19 +51,17 @@ async fn run_transition_test(apikey: Option<String>) -> Result<(), String> {
 // 開始時にAPIキーが有用か調べる
 #[tauri::command]
 pub async fn verify_api_key_on_startup() -> Result<(), String> {
-    let data_dir = tauri::api::path::data_dir()
-        .unwrap_or(std::path::PathBuf::from("./"))
-        .join(BUNDLE_IDENTIFIER);
+    let data_dir = get_data_dir();
     // data_dirがなければ作成
     if !data_dir.exists() {
         std::fs::create_dir(&data_dir).expect("error");
     }
-    let env_file_path = get_data_dir().join(".env");
+    let env_file_path = data_dir.join(".env");
 
     if !env_file_path.exists() {
-        let file = std::fs::File::create(&env_file_path).expect("envファイルの作成に失敗しました");
+        let file = std::fs::File::create(&env_file_path).map_err(|e| e.to_string())?;
         // 初期値のLANGUAGEを入れる
-        writeln!(&file, "LANGUAGE=ja\n").expect("languageの設定に失敗しました");
+        writeln!(&file, "LANGUAGE=ja\n").map_err(|e| e.to_string())?;
     }
     dotenv::from_path(&env_file_path).ok();
     run_transition_test(None).await
@@ -115,10 +114,8 @@ fn change_environment_value(key: String, value: &str) -> Result<(), String> {
 // フロントからAPIキーを設定する
 #[tauri::command]
 pub async fn save_apikey(apikey: String) -> Result<(), String> {
-    match change_environment_value("GOOGLE_TRANSLATE_API_KEY".to_string(), &apikey) {
-        Ok(_) => run_transition_test(Some(apikey)).await,
-        Err(e) => Err(e.to_string()),
-    }
+    change_environment_value("GOOGLE_TRANSLATE_API_KEY".to_string(), &apikey)?;
+    run_transition_test(Some(apikey)).await
 }
 
 #[tauri::command]

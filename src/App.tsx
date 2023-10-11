@@ -9,7 +9,7 @@ import Button from "./components/Button";
 
 function App() {
   const [apikey, setApikey] = useState("");
-  const [usefulApiKey, setUsefulApiKey] = useState(false);
+  const [validApiKey, setValidApiKey] = useState(false);
   const [translating, setTranslating] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("ja");
 
@@ -19,7 +19,7 @@ function App() {
       let result;
       try {
         result = await invoke('verify_api_key_on_startup');
-        setUsefulApiKey(true);
+        setValidApiKey(true);
       } catch {
         console.log(`Err: ${result}`);
       }
@@ -76,11 +76,11 @@ function App() {
     e.preventDefault();
     const result = await executeInvoke('save_apikey', { apikey });
     toast[result ? 'success' : 'error'](result ? 'APIキーを設定しました' : 'このAPIキーは使えません');
-    if (result) setUsefulApiKey(true);
+    if (result) setValidApiKey(true);
   };
 
   const handleStart = async () => {
-    if (!usefulApiKey) {
+    if (!validApiKey) {
       toast.error("有用なAPIキーが設定されていません");
       return;
     }
@@ -125,7 +125,7 @@ function App() {
           onClick={() => handleStop()}
         />
       ) : (
-        usefulApiKey &&
+        validApiKey &&
         <div className="flex gap-3">
           <select 
             value={selectedLanguage} 
@@ -146,13 +146,13 @@ function App() {
           />
         </div>
       )}
-      { usefulApiKey ? (
+      { validApiKey ? (
           <div className="flex items-center space-x-2 mt-20 border border-gray-300 py-2 px-4 rounded-md shadow-sm">
             <span className="text-lg text-green-600">有用なAPIキーが設定されています</span>
             <Button 
               text="再度APIキーを設定する"
               variant="default"
-              onClick={() => {setUsefulApiKey(false);}}
+              onClick={() => {setValidApiKey(false);}}
             />
           </div>
       ) : (
