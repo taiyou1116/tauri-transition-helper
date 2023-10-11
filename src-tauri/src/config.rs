@@ -1,12 +1,11 @@
 use crate::monitor_clipboard::BUNDLE_IDENTIFIER;
 use crate::transition;
-use dotenv::from_path;
 use reqwest;
 use std::collections::HashMap;
+use std::env;
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
-use std::{env, fs::File};
 
 fn get_data_dir() -> PathBuf {
     tauri::api::path::data_dir()
@@ -16,34 +15,26 @@ fn get_data_dir() -> PathBuf {
 
 pub struct Config {
     pub api_key: String,
+    pub language: String,
 }
 impl Config {
-    pub fn new(mut file: &File) -> Result<Self, env::VarError> {
-        let env_file_path = get_data_dir().join(".env");
-
-        if let Err(e) = from_path(env_file_path) {
-            writeln!(file, "dotenverror: {}", e).expect("dotenverror: e");
-        }
+    pub fn new() -> Result<Self, env::VarError> {
         let api_key = env::var("GOOGLE_TRANSLATE_API_KEY")?;
-        println!("{}", api_key);
-        Ok(Self { api_key })
+        let language = env::var("LANGUAGE")?;
+        Ok(Self { api_key, language })
     }
 }
 
 // APIが使えるかテスト
-async fn run_transition_test(apikey: Option<String>, path: &PathBuf) -> Result<(), String> {
+async fn run_transition_test(apikey: Option<String>) -> Result<(), String> {
     let api_key = match apikey {
         Some(key) => key,
-        None => {
-            dotenv::from_path(path).ok();
-            env::var("GOOGLE_TRANSLATE_API_KEY")
-                .expect("google api keyが取得できませんでした")
-                .to_string()
-        }
+        None => env::var("GOOGLE_TRANSLATE_API_KEY")
+            .expect("google api keyが取得できませんでした")
+            .to_string(),
     };
 
     let client = reqwest::Client::new();
-    println!("{}", api_key);
     match transition::run(&api_key, "a", &client).await {
         Ok(translated_text) => {
             println!("Text: {}", translated_text);
@@ -69,14 +60,19 @@ pub async fn verify_api_key_on_startup() -> Result<(), String> {
     let env_file_path = get_data_dir().join(".env");
 
     if !env_file_path.exists() {
-        std::fs::File::create(&env_file_path).expect("envファイルの作成に失敗しました");
+        let file = std::fs::File::create(&env_file_path).expect("envファイルの作成に失敗しました");
+        // 初期値のLANGUAGEを入れる
+        writeln!(&file, "LANGUAGE=ja\n").expect("languageの設定に失敗しました");
     }
-
-    run_transition_test(None, &env_file_path).await
+    dotenv::from_path(&env_file_path).ok();
+    run_transition_test(None).await
 }
 
+// envファイルのvalueを変更(KEYがなかったら作成)
 fn change_environment_value(key: String, value: &str) -> Result<(), String> {
     let env_file_path = get_data_dir().join(".env");
+    // envファイルの値を即座に反映
+    env::set_var(&key, &value);
     let content = fs::read_to_string(&env_file_path).map_err(|e| e.to_string())?;
     let mut env_map: HashMap<String, String> = HashMap::new();
 
@@ -112,15 +108,14 @@ fn change_environment_value(key: String, value: &str) -> Result<(), String> {
 // フロントからAPIキーを設定する
 #[tauri::command]
 pub async fn save_apikey(apikey: String) -> Result<(), String> {
-    let env_file_path = get_data_dir().join(".env");
     match change_environment_value("GOOGLE_TRANSLATE_API_KEY".to_string(), &apikey) {
-        Ok(_) => run_transition_test(Some(apikey), &env_file_path).await,
+        Ok(_) => run_transition_test(Some(apikey)).await,
         Err(e) => Err(e.to_string()),
     }
 }
 
 #[tauri::command]
-pub async fn set_language(set_language: String) -> Result<(), String> {
+pub async fn save_language(set_language: String) -> Result<(), String> {
     change_environment_value("LANGUAGE".to_string(), &set_language)?;
 
     Ok(())

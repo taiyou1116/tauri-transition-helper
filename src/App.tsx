@@ -92,7 +92,7 @@ function App() {
     // Rustの言語に
     setSelectedValue(e.target.value);
     const setLanguage = e.target.value;
-    await executeInvoke('set_language', {setLanguage});
+    await executeInvoke('save_language', {setLanguage});
   };
 
   // 翻訳された通知を出す

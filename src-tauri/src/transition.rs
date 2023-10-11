@@ -7,7 +7,8 @@ pub async fn run(
     text_to_be_translated: &str,
     client: &reqwest::Client,
 ) -> Result<String, String> {
-    let target_language = "ja";
+    let ln = std::env::var("LANGUAGE").unwrap();
+    let target_language = &ln;
 
     let url = format!(
         "https://translation.googleapis.com/language/translate/v2?key={}",
