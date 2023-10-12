@@ -58,7 +58,7 @@
    ```
    yarn
    ```
-3. アプリを実行します。
+3. アプリをビルドします。
    ```
-   yarn tauri dev
+   yarn tauri build
    ```
